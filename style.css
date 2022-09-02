@@ -304,14 +304,14 @@ h6 {
 }
 
 .project1::after {
-      content: "aesthetic.";
+      content: "Software";
       font-family: "Roboto Mono";
       font-size: 36px;
       position: relative;
       color: #fff;
       display: block;
       top: 8%;
-      left: -40%;
+      left: -60%;
       right: 0;
       bottom: 0;
 }
