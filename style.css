@@ -305,7 +305,7 @@ h6 {
 }
 
 .project1::after {
-      content: "Software Development";
+      content: "Software Development" no-repeat;
       font-family: "Roboto Mono";
       font-size: 36px;
       position: relative;
@@ -318,7 +318,7 @@ h6 {
 }
 
 .project2 {
-      background: url(webdev1000x750.jpg);
+      background: url(webdev1000x750.jpg) no-repeat;
       width: 500px;  
       height: 300px; 
 }
@@ -337,7 +337,7 @@ h6 {
 }
 
 .project3 {
-      background: url(troubleshooting940x360.jpg);
+      background: url(troubleshooting940x360.jpg) no-repeat;
       width: 500px;  
       height: 300px;
 }
@@ -362,7 +362,7 @@ h6 {
 }
 
 .project4::after {
-      content: "Professional Attitude";
+      content: "Professional Attitude" no-repeat;
       font-family: "Roboto Mono";
       font-size: 36px;
       position: relative;
