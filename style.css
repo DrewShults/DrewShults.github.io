@@ -304,7 +304,7 @@ h6 {
 }
 
 .project1::after {
-      content: "Software";
+      content: "Software Development";
       font-family: "Roboto Mono";
       font-size: 36px;
       position: relative;
@@ -322,7 +322,7 @@ h6 {
 }
 
 .project2::after {
-      content: "creativity.";
+      content: "Website development";
       font-family: "Roboto Mono";
       font-size: 36px;
       position: relative;
@@ -340,7 +340,7 @@ h6 {
 }
 
 .project3::after {
-      content: "inventive.";
+      content: "Troubleshooting";
       font-family: "Roboto Mono";
       font-size: 36px;
       position: relative;
@@ -358,7 +358,7 @@ h6 {
 }
 
 .project4::after {
-      content: "ease.";
+      content: "Professional Attitude";
       font-family: "Roboto Mono";
       font-size: 36px;
       position: relative;
