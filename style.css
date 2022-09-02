@@ -312,7 +312,7 @@ h6 {
       display: block;
       top: -10%;
       left: 0;
-      right: 0;
+      right: -5px;
       bottom: 0;
 }
 
