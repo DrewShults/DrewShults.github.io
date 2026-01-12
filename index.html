@@ -1,223 +1,1282 @@
-<!DOCTYPE html>
-<html>
-<html lang="en">
-<head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta http-equiv="X-UA-Compatible" content="ie=edge">
-      <meta name="author" content="Andrew">
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Andrew Shults - Interactive Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/iconify/2.0.0/iconify.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Press+Start+2P&amp;display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .game-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+        
+        /* Animations */
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
+        @keyframes wingFlap { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.7); } }
+        @keyframes slash { 0% { transform: rotate(0deg) scale(1); opacity: 1; } 50% { transform: rotate(45deg) scale(1.2); opacity: 1; } 100% { transform: rotate(90deg) scale(0.8); opacity: 0; } }
+        @keyframes run { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes hit { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(3) hue-rotate(180deg); } }
+        @keyframes death { 0% { transform: scale(1) rotate(0deg); opacity: 1; } 100% { transform: scale(0) rotate(360deg); opacity: 0; } }
+        @keyframes slideIn { 0% { transform: translateY(-50px) scale(0.9); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes particle { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+        @keyframes shockwave { 0% { transform: scale(0); opacity: 0.8; border-width: 8px; } 100% { transform: scale(3); opacity: 0; border-width: 1px; } }
+        @keyframes resumeReveal { 0% { transform: scale(0) rotate(-180deg); opacity: 0; filter: blur(20px); } 50% { transform: scale(1.2) rotate(10deg); opacity: 1; filter: blur(5px); } 100% { transform: scale(1) rotate(0deg); opacity: 1; filter: blur(0); } }
+        @keyframes cloudMove { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+        @keyframes cloudMoveSlow { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes starTwinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-      <title>My Portfolio Website</title>
-      <!-- stylesheet -->
-      <link rel="stylesheet" href="style.css">
+        /* Game Elements */
+        .monster { animation: float 2s ease-in-out infinite; }
+        .monster-wing { animation: wingFlap 0.2s ease-in-out infinite; }
+        .player.running { animation: run 0.3s ease-in-out infinite; }
+        .slash-effect { animation: slash 0.2s ease-out forwards; }
+        .monster.hit { animation: hit 0.1s ease-out; }
+        .monster.dying { animation: death 0.5s ease-out forwards; }
+        .resume-popup { animation: slideIn 0.4s ease-out forwards; }
+        .resume-reveal { animation: resumeReveal 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .explosion-ring { animation: shockwave 0.6s ease-out forwards; }
+        .explosion-particle { animation: particle 0.8s ease-out forwards; }
+        .twinkling-star { animation: starTwinkle 2s ease-in-out infinite; }
 
-      <!-- bootstrap cdns -->
-      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        .game-canvas { background: linear-gradient(to bottom, #0a0618 0%, #0f0a1e 20%, #1a1035 50%, #2d1f4e 80%, #1a1035 100%); }
+        .ground { background: linear-gradient(to bottom, #2a1f4a 0%, #1a1035 50%, #0f0a1e 100%); }
+        
+        .stars {
+            background-image: radial-gradient(2px 2px at 20px 30px, white, transparent),
+                            radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                            radial-gradient(1px 1px at 90px 40px, white, transparent),
+                            radial-gradient(2px 2px at 130px 80px, rgba(255,255,255,0.6), transparent),
+                            radial-gradient(1px 1px at 180px 50px, rgba(255,255,255,0.7), transparent);
+            background-repeat: repeat;
+            background-size: 300px 150px;
+        }
 
-      <!-- google fonts -->
-      <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:100,100i,300,300i,400,400i,500,500i,700,700i" rel="stylesheet">
+        .platform { background: linear-gradient(to bottom, #6366f1 0%, #4338ca 50%, #3730a3 100%); box-shadow: 0 4px 0 #312e81, 0 8px 20px rgba(99, 102, 241, 0.3); }
+        .platform-high { background: linear-gradient(to bottom, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%); box-shadow: 0 4px 0 #5b21b6, 0 8px 20px rgba(139, 92, 246, 0.4); }
 
-      <!-- terminal effect -->
-      <script src="t.min.js"></script>
-
-      <!-- for on scroll animations -->
-      <link rel="stylesheet" href="animate.css">
-      <script src="wow.min.js"></script>
-
+        .resume-view::-webkit-scrollbar { width: 8px; }
+        .resume-view::-webkit-scrollbar-track { background: #1a1035; }
+        .resume-view::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 4px; }
+        
+        .mobile-btn { -webkit-tap-highlight-color: transparent; }
+        .mobile-btn:active { transform: scale(0.95); }
+        
+        .glass-panel { background: rgba(24, 24, 27, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
 </head>
-<body>
-      <div class="wrapper">
-
-            <!--------------- navbar starts here --------------->
-            <nav>
-                  <span id="brand">
-                        <a href="index.html">Andrew Shults</a>
-                  </span>
-
-                  <ul id="menu">
-                        <li><a href="index.html">home<span>.</span></a></li>
-                        <li><a href="work.html">work<span>.</span></a></li>
-                        <li><a href="about.html">about me<span>.</span></a></li>
-                        <li><a href="contact.html">contact<span>.</span></a></li>
-                  </ul>
-
-                  <div id="toggle">
-                        <div class="span">menu</div>
-                  </div>
-
-            </nav>
-
-            <div id="resize">
-                  <div class="close-btn">close</div>
-
-                  <ul id="menu">
-                        <li><a href="index.html">home<span>.</span></a></li>
-                        <li><a href="work.html">work<span>.</span></a></li>
-                        <li><a href="about.html">about me<span>.</span></a></li>
-                        <li><a href="contact.html">contact<span>.</span></a></li>
-                  </ul>
+<body class="bg-zinc-950 text-white min-h-screen overflow-hidden">
+    
+    <!-- Start Screen -->
+    <div id="startScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-zinc-950 via-purple-950/30 to-zinc-950">
+        <div class="text-center space-y-8 p-8 relative z-10">
+            <div class="space-y-2">
+                <h1 class="game-font text-2xl md:text-4xl text-purple-400 tracking-tight leading-relaxed">Andrew Shults</h1>
+                <h2 class="game-font text-lg md:text-xl text-indigo-300 mt-4">My Portfolio Quest</h2>
             </div>
-            <!--------------- navbar ends here --------------->
-
-
-
-            <!--------------- hero section starts here --------------->
-            <div class="hero">
-                  <div class="header">
-                        <h1 class="line anim-typewriter">I develop what you need.</h1>
-                  </div>
+            
+            <div class="w-32 h-32 mx-auto relative animate-bounce">
+                <!-- Player Preview -->
+                <svg viewBox="0 0 64 64" class="w-full h-full drop-shadow-2xl">
+                    <rect x="24" y="20" width="16" height="24" fill="#6366f1" rx="2"></rect>
+                    <circle cx="32" cy="14" r="10" fill="#fbbf24"></circle>
+                    <circle cx="29" cy="12" r="2" fill="#1e1b4b"></circle>
+                    <circle cx="35" cy="12" r="2" fill="#1e1b4b"></circle>
+                    <rect x="40" y="8" width="4" height="30" fill="#94a3b8" rx="1"></rect>
+                    <rect x="36" y="32" width="12" height="4" fill="#fbbf24" rx="1"></rect>
+                    <rect x="26" y="44" width="5" height="12" fill="#4338ca" rx="1"></rect>
+                    <rect x="33" y="44" width="5" height="12" fill="#4338ca" rx="1"></rect>
+                </svg>
             </div>
-
-            <div class="scroll-down"></div>
-            <!--------------- hero section ends here --------------->
-
-
-
-            <!--------------- projects section starts here --------------->
-            <div class="container-fluid">
-                  <br><br><br>
-
-                  <h6><a href="https://drewshults.github.io/work.html">Andrew Shults - Software Engineer</a></h6>
-
-                  <div class="vertical"></div>
-                  <br>
-
-                  <div class="whitespace"></div>
-                  <div class="whitespace"></div>
-
-                  <div class="row">
-                        <div class="col-lg-8"></div>
-
-                        <div class="col-lg-4 project project1 wow fadeInUp" onclick="location.href='project.html'"></div>
-                  </div>
-
-                  <div class="whitespace"></div>
-
-                  <div class="row">
-                        <div class="col-lg-6 project project2 wow fadeInUp" onclick="location.href='project.html'"></div>
-
-                        <div class="col-lg-6"></div>
-                  </div>
-
-                  <div class="whitespace"></div>
-
-                  <div class="row">
-                        <div class="col-lg-7"></div>
-
-                        <div class="col-lg-4 project project3 wow fadeInUp" onclick="location.href='project.html'"></div>
-
-                        <div class="col-lg-1"></div>
-                  </div>
-
-                  <div class="whitespace"></div>
-
-                  <div class="row">
-                        <div class="col-lg-1"></div>
-
-                        <div class="col-lg-5 project project4 wow fadeInUp" onclick="location.href='project.html'"></div>
-
-                        <div class="col-lg-6"></div>
-                  </div>
-
-                  <div class="whitespace"></div>
+            
+            <div class="space-y-4">
+                <p class="text-zinc-400 text-sm max-w-md mx-auto leading-relaxed">
+                    Battle monsters to unlock my experience and skills. Use arrow keys to move, up to jump, and spacebar to attack!
+                </p>
             </div>
-            <!--------------- projects section ends here --------------->
+            
+            <div class="flex flex-col gap-3">
+                <button onclick="startGame()" class="game-font text-xs bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-8 py-4 rounded-lg transition-all transform hover:scale-105 shadow-lg shadow-purple-500/25">
+                    START QUEST
+                </button>
+                <button onclick="showResumeView(false)" class="text-sm text-zinc-400 hover:text-purple-400 transition-colors underline underline-offset-4">
+                    Skip to Resume
+                </button>
+            </div>
+        </div>
+    </div>
 
+    <!-- Resume View (Scrollable List) -->
+    <div id="resumeView" class="fixed inset-0 z-[60] hidden bg-zinc-950">
+        <div class="h-full overflow-y-auto resume-view bg-gradient-to-b from-zinc-950 via-purple-950/5 to-zinc-950">
+            <div class="max-w-3xl mx-auto px-4 py-8 md:py-16">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-8 sticky top-0 bg-zinc-950/90 backdrop-blur-md py-4 z-10 border-b border-white/5">
+                    <button onclick="handleResumeBack()" class="flex items-center gap-2 text-zinc-400 hover:text-purple-400 transition-colors text-sm group">
+                        <span class="iconify w-4 h-4 group-hover:-translate-x-1 transition-transform" data-icon="lucide:arrow-left"></span>
+                        Back
+                    </button>
+                    <div class="flex gap-3">
+                        <a href="resume.pdf" download="" class="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 border border-white/10 px-4 py-2 rounded-lg text-sm transition-colors hover:border-purple-500/50">
+                            <span class="iconify w-4 h-4" data-icon="lucide:download"></span>
+                            PDF
+                        </a>
+                    </div>
+                </div>
 
+                <!-- Resume Content -->
+                <div class="space-y-8 pb-12" id="fullResumeContent">
+                    <!-- Dynamically populated -->
+                </div>
 
-            <!--------------- footer starts here --------------->
-            <div class="footer">
-                  <div class="container">
-                        <br><br>
+                <!-- Contact Footer -->
+                <div class="mt-12 pt-8 border-t border-white/10 text-center pb-20">
+                    <h3 class="text-lg font-semibold text-white mb-6">Let's Connect</h3>
+                    <div class="flex justify-center gap-4">
+                        <button onclick="openContactModal()" class="game-font text-xs bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg transition-colors shadow-lg shadow-purple-500/20">
+                            CONTACT ME
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                        <div class="collab">
-                              <div class="row">
-                                    <div class="col-lg-12">
-                                          <p class="wow fadeInUp">Have an interesting project? I can help you.</p>
-                                    </div>
-                              </div>
+    <!-- Game Container -->
+    <div id="gameContainer" class="fixed inset-0 hidden">
+        <!-- HUD -->
+        <div class="absolute top-0 left-0 right-0 z-40 p-4 flex justify-between items-start pointer-events-none">
+            <div class="space-y-2 pointer-events-auto">
+                <div class="game-font text-xs text-purple-400">SCORE</div>
+                <div id="score" class="game-font text-xl text-white drop-shadow-md">0</div>
+            </div>
+            
+            <div class="flex items-center gap-4 pointer-events-auto">
+                <div class="text-right hidden sm:block">
+                    <div class="game-font text-[10px] text-purple-400 mb-1">PROGRESS</div>
+                    <div class="flex gap-1">
+                        <div id="section1" class="w-6 h-2 bg-zinc-800 rounded-sm border border-white/10 transition-colors"></div>
+                        <div id="section2" class="w-6 h-2 bg-zinc-800 rounded-sm border border-white/10 transition-colors"></div>
+                        <div id="section3" class="w-6 h-2 bg-zinc-800 rounded-sm border border-white/10 transition-colors"></div>
+                        <div id="section4" class="w-6 h-2 bg-zinc-800 rounded-sm border border-white/10 transition-colors"></div>
+                        <div id="section5" class="w-6 h-2 bg-zinc-800 rounded-sm border border-white/10 transition-colors"></div>
+                    </div>
+                </div>
+                
+                <button onclick="togglePause()" class="glass-panel hover:bg-zinc-800/80 p-2.5 rounded-lg text-zinc-300 hover:text-white transition-all active:scale-95 shadow-lg">
+                    <span class="iconify w-5 h-5" data-icon="lucide:pause"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Pause Menu Overlay -->
+        <div id="pauseMenu" class="hidden absolute inset-0 z-[55] bg-black/80 backdrop-blur-sm flex items-center justify-center">
+            <div class="glass-panel p-8 rounded-2xl max-w-sm w-full mx-4 text-center space-y-6 shadow-2xl shadow-purple-900/20 transform transition-all">
+                <h2 class="game-font text-xl text-white mb-2">PAUSED</h2>
+                
+                <div class="space-y-3 flex flex-col">
+                    <button onclick="togglePause()" class="w-full py-3 bg-white text-black font-semibold rounded-lg hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2">
+                        <span class="iconify w-4 h-4" data-icon="lucide:play"></span> Resume Game
+                    </button>
+                    
+                    <button onclick="showResumeView(true)" class="w-full py-3 bg-zinc-800 border border-white/10 text-zinc-200 font-medium rounded-lg hover:bg-zinc-700 hover:text-white transition-colors flex items-center justify-center gap-2">
+                        <span class="iconify w-4 h-4" data-icon="lucide:file-text"></span> View Full Resume
+                    </button>
+                    
+                    <button onclick="openContactModal()" class="w-full py-3 bg-zinc-800 border border-white/10 text-zinc-200 font-medium rounded-lg hover:bg-zinc-700 hover:text-white transition-colors flex items-center justify-center gap-2">
+                        <span class="iconify w-4 h-4" data-icon="lucide:mail"></span> Contact Me
+                    </button>
+                    
+                    <div class="h-px bg-white/10 my-2"></div>
+                    
+                    <button onclick="restartGame()" class="w-full py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors text-sm font-medium">
+                        Exit to Main Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Canvas -->
+        <div id="gameCanvas" class="game-canvas w-full h-full relative overflow-hidden cursor-none">
+            <!-- Background Elements -->
+            <div class="absolute inset-0" style="background: linear-gradient(to bottom, #0a0618 0%, #1a0a2e 30%, #2d1b4e 60%, #1a1035 100%);"></div>
+            <div class="absolute inset-0 stars opacity-60"></div>
+            <div id="twinklingStars" class="absolute inset-0 pointer-events-none"></div>
+            
+            <!-- Moon -->
+            <div class="absolute top-16 right-10 md:right-32 w-24 h-24">
+                <div class="w-full h-full rounded-full bg-gradient-to-br from-yellow-100 to-yellow-200 opacity-90 shadow-[0_0_60px_20px_rgba(253,224,71,0.2)]"></div>
+            </div>
+            
+            <!-- Layers -->
+            <div class="absolute bottom-24 left-0 right-0 h-64 opacity-30"><svg viewBox="0 0 1440 320" class="w-full h-full" preserveAspectRatio="none"><path fill="#1a1035" d="M0,224L60,192L120,240L180,176L240,208L300,160L360,192L420,144L480,176L540,128L600,160L660,112L720,144L780,96L840,128L900,80L960,112L1020,64L1080,96L1140,48L1200,80L1260,32L1320,64L1380,16L1440,48L1440,320L0,320Z"></path></svg></div>
+            <div id="backClouds" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+            <div id="treesContainer" class="absolute bottom-24 left-0 right-0 pointer-events-none z-[8]"></div>
+            <div id="middleClouds" class="absolute inset-0 pointer-events-none overflow-hidden z-[15]"></div>
+            <div id="platformsContainer" class="absolute inset-0 pointer-events-none z-[20]"></div>
+            
+            <!-- Ground -->
+            <div class="ground absolute bottom-0 left-0 right-0 h-24 border-t-2 border-purple-500/30 z-[25]">
+                <div class="absolute inset-0 opacity-50" style="background: repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(139,92,246,0.1) 40px, rgba(139,92,246,0.1) 42px);"></div>
+            </div>
+            
+            <!-- Player -->
+            <div id="player" class="absolute w-16 h-20 transition-transform duration-75 z-[30]" style="left: 80px; bottom: 96px;">
+                <svg viewBox="0 0 64 80" class="w-full h-full">
+                    <ellipse cx="32" cy="78" rx="16" ry="4" fill="rgba(0,0,0,0.3)"></ellipse>
+                    <rect id="leftLeg" x="22" y="52" width="7" height="18" fill="#4338ca" rx="2"></rect>
+                    <rect id="rightLeg" x="35" y="52" width="7" height="18" fill="#4338ca" rx="2"></rect>
+                    <rect x="20" y="28" width="24" height="28" fill="#6366f1" rx="3"></rect>
+                    <rect x="20" y="48" width="24" height="4" fill="#fbbf24"></rect>
+                    <circle cx="32" cy="18" r="14" fill="#fcd34d"></circle>
+                    <path d="M18 14 Q32 4 46 14 Q44 8 32 6 Q20 8 18 14" fill="#92400e"></path>
+                    <circle cx="27" cy="16" r="3" fill="#1e1b4b"></circle>
+                    <circle cx="37" cy="16" r="3" fill="#1e1b4b"></circle>
+                    <path d="M28 24 Q32 28 36 24" stroke="#92400e" stroke-width="2" fill="none" stroke-linecap="round"></path>
+                    <rect id="swordArm" x="42" y="30" width="8" height="20" fill="#fcd34d" rx="3" transform-origin="46px 32px"></rect>
+                    <g id="sword" transform-origin="50px 32px">
+                        <rect x="48" y="10" width="5" height="40" fill="#cbd5e1" rx="1"></rect>
+                        <rect x="44" y="46" width="14" height="5" fill="#fbbf24" rx="1"></rect>
+                    </g>
+                </svg>
+                <div id="slashEffect" class="absolute -right-8 top-0 w-20 h-20 opacity-0 pointer-events-none">
+                    <svg viewBox="0 0 80 80" class="w-full h-full"><path d="M15 50 Q40 25 65 50" fill="none" stroke="rgba(167,139,250,0.8)" stroke-width="3" stroke-linecap="round"></path></svg>
+                </div>
+            </div>
+            
+            <div id="monstersContainer" class="absolute inset-0 pointer-events-none z-[28]"></div>
+            <div id="effectsContainer" class="absolute inset-0 pointer-events-none z-[35]"></div>
+            <div id="frontClouds" class="absolute inset-0 pointer-events-none overflow-hidden z-[40]"></div>
+        </div>
+
+        <!-- Resume Section Unlock Modal -->
+        <div id="resumeModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div class="resume-popup bg-[#0f0a1e] border border-purple-500/30 rounded-xl max-w-xl w-full max-h-[85vh] overflow-y-auto shadow-2xl shadow-purple-500/20 relative">
+                <!-- Close X for convenience -->
+                <button onclick="closeResumeModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors">
+                    <span class="iconify w-6 h-6" data-icon="lucide:x"></span>
+                </button>
+
+                <div class="p-6 md:p-8">
+                    <div class="text-center mb-6">
+                        <div class="game-font text-[10px] text-purple-400 mb-2 tracking-widest">MONSTER DEFEATED</div>
+                        <div class="game-font text-xs text-emerald-400">+100 XP</div>
+                    </div>
+                    
+                    <div id="resumeContent" class="space-y-4 resume-reveal">
+                        <!-- Content injected dynamically -->
+                    </div>
+                    
+                    <button onclick="closeResumeModal()" class="game-font text-xs w-full mt-8 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 py-4 rounded-lg transition-all text-white shadow-lg">
+                        CONTINUE QUEST
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="victoryScreen" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/95 backdrop-blur-md p-4">
+            <div class="text-center space-y-8 max-w-md w-full animate-in fade-in duration-700">
+                <div class="space-y-2">
+                    <div class="game-font text-3xl text-yellow-400 animate-pulse drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">VICTORY!</div>
+                    <div class="game-font text-[10px] text-purple-300 tracking-wider">ALL SECTIONS UNLOCKED</div>
+                </div>
+                
+                <div id="finalScore" class="game-font text-lg text-white bg-white/5 py-4 rounded-lg border border-white/10"></div>
+                
+                <div class="grid grid-cols-2 gap-3 text-left">
+                    <button onclick="showResumeView(true)" class="glass-panel hover:bg-zinc-800 border-white/10 rounded-lg p-4 transition-all group hover:border-purple-500/40 text-left">
+                        <div class="flex flex-col gap-2">
+                            <div class="w-8 h-8 bg-purple-500/20 rounded-md flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                                <span class="iconify w-5 h-5" data-icon="lucide:file-text"></span>
+                            </div>
+                            <div>
+                                <div class="font-medium text-zinc-200 text-sm">Full Resume</div>
+                                <div class="text-[10px] text-zinc-500">View all sections</div>
+                            </div>
                         </div>
-
-                        <br>
-
-                        <div class="hr">
-                              <div class="row"></div>
+                    </button>
+                    
+                    <a href="resume.pdf" download="" class="glass-panel hover:bg-zinc-800 border-white/10 rounded-lg p-4 transition-all group hover:border-purple-500/40">
+                        <div class="flex flex-col gap-2">
+                            <div class="w-8 h-8 bg-indigo-500/20 rounded-md flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+                                <span class="iconify w-5 h-5" data-icon="lucide:download"></span>
+                            </div>
+                            <div>
+                                <div class="font-medium text-zinc-200 text-sm">Download</div>
+                                <div class="text-[10px] text-zinc-500">Get PDF</div>
+                            </div>
                         </div>
-
-                        <br><br>
-
-                        <div class="info">
-                              <div class="row">
-                                    <div class="col-lg-4" id="personal">
-                                          <p class="wow fadeInUp">connect with me</p>
-                                          <h4 class="wow fadeInUp" data-wow-delay="0.2s"> <a href="https://www.linkedin.com/in/andrew-shults/" style="color:white"> LinkedIn </a> </h4>
-</a> </h4> 
-                                          <br><br>
-                                    </div>
-
-                                    <div class="col-lg-4" id="media">
-                                          <p class="wow fadeInUp" data-wow-delay="0s">follow me</p>
-
-                                          <ul>
-                                                <li id="fb" class="wow fadeInUp" data-wow-delay="0.4s">fb</li>
-                                                <li id="ig" class="wow fadeInUp" data-wow-delay="0.6s">ig</li>
-                                                <li id="tw" class="wow fadeInUp" data-wow-delay="0.8s">tw</li>
-                                                <li id="yt" class="wow fadeInUp" data-wow-delay="1s">yt</li>
-                                          </ul>
-
-                                          <br><br>
-                                    </div>
-
-                                    <div class="col-lg-4" id="address">
-                                          <p class="wow fadeInUp" data-wow-delay="0s">say hello</p>
-                                          <h4 class="wow fadeInUp" data-wow-delay="0.2s"><a href=mailto:Drewshults92@gmail.com>Drewshults92@gmail.com</a></h4>
-                                          <br><br>
-                                    </div>
-                              </div>
+                    </a>
+                    
+                    <button onclick="openContactModal()" class="glass-panel hover:bg-zinc-800 border-white/10 rounded-lg p-4 transition-all group hover:border-purple-500/40 text-left">
+                        <div class="flex flex-col gap-2">
+                            <div class="w-8 h-8 bg-emerald-500/20 rounded-md flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                                <span class="iconify w-5 h-5" data-icon="lucide:mail"></span>
+                            </div>
+                            <div>
+                                <div class="font-medium text-zinc-200 text-sm">Contact</div>
+                                <div class="text-[10px] text-zinc-500">Get in touch</div>
+                            </div>
                         </div>
-                  </div>
+                    </button>
+                    
+                    <button onclick="restartGame()" class="glass-panel hover:bg-zinc-800 border-white/10 rounded-lg p-4 transition-all group hover:border-purple-500/40 text-left">
+                        <div class="flex flex-col gap-2">
+                            <div class="w-8 h-8 bg-yellow-500/20 rounded-md flex items-center justify-center text-yellow-400 group-hover:scale-110 transition-transform">
+                                <span class="iconify w-5 h-5" data-icon="lucide:refresh-cw"></span>
+                            </div>
+                            <div>
+                                <div class="font-medium text-zinc-200 text-sm">Play Again</div>
+                                <div class="text-[10px] text-zinc-500">Restart quest</div>
+                            </div>
+                        </div>
+                    </button>
+                </div>
             </div>
-            <!--------------- footer ends here --------------->
+        </div>
+    </div>
 
-            <br><br><br><br>
+    <!-- Contact Modal -->
+    <div id="contactModal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-[#18181b] border border-white/10 rounded-xl max-w-sm w-full shadow-2xl overflow-hidden transform transition-all scale-100">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-white">Contact Me</h3>
+                    <button onclick="closeContactModal()" class="text-zinc-500 hover:text-white transition-colors">
+                        <span class="iconify w-5 h-5" data-icon="lucide:x"></span>
+                    </button>
+                </div>
+                
+                <div class="space-y-3">
+                    <a href="mailto:Andrewshults92@gmail.com" class="flex items-center gap-4 p-4 bg-zinc-900/50 hover:bg-zinc-900 rounded-lg border border-white/5 hover:border-purple-500/30 transition-all group">
+                        <div class="w-10 h-10 bg-purple-500/10 rounded-full flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                            <span class="iconify w-5 h-5" data-icon="lucide:mail"></span>
+                        </div>
+                        <div>
+                            <div class="text-xs text-zinc-500">Email</div>
+                            <div class="text-sm text-zinc-200">Andrewshults92@gmail.com</div>
+                        </div>
+                    </a>
+                    
+                    <a href="tel:+16064163169" class="flex items-center gap-4 p-4 bg-zinc-900/50 hover:bg-zinc-900 rounded-lg border border-white/5 hover:border-purple-500/30 transition-all group">
+                        <div class="w-10 h-10 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                            <span class="iconify w-5 h-5" data-icon="lucide:phone"></span>
+                        </div>
+                        <div>
+                            <div class="text-xs text-zinc-500">Phone</div>
+                            <div class="text-sm text-zinc-200">+1 (606) 416-3169</div>
+                        </div>
+                    </a>
+                    
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <a href="https://www.linkedin.com/in/andrewshultsengineering/" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-zinc-900/50 hover:bg-[#0077b5] hover:text-white rounded-lg border border-white/5 transition-colors text-zinc-400">
+                            <span class="iconify w-4 h-4" data-icon="lucide:linkedin"></span>
+                            <span class="text-sm">LinkedIn</span>
+                        </a>
+                        <a href="https://github.com/DrewShults" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-zinc-900/50 hover:bg-black hover:text-white rounded-lg border border-white/5 transition-colors text-zinc-400">
+                            <span class="iconify w-4 h-4" data-icon="lucide:github"></span>
+                            <span class="text-sm">GitHub</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-      </div>
+    <!-- Mobile Controls -->
+    <div id="mobileControls" class="fixed bottom-0 left-0 right-0 z-[60] p-6 pb-8 hidden pointer-events-none select-none">
+        <div class="flex justify-between items-end w-full max-w-4xl mx-auto pointer-events-auto">
+            <!-- D-pad -->
+            <div class="relative w-40 h-32">
+                <button id="leftBtn" class="mobile-btn absolute bottom-0 left-0 w-16 h-14 bg-white/10 backdrop-blur border border-white/10 rounded-l-xl flex items-center justify-center active:bg-purple-600/50 transition-colors">
+                    <span class="iconify w-6 h-6 text-white" data-icon="lucide:arrow-left"></span>
+                </button>
+                <button id="rightBtn" class="mobile-btn absolute bottom-0 left-20 w-16 h-14 bg-white/10 backdrop-blur border border-white/10 rounded-r-xl flex items-center justify-center active:bg-purple-600/50 transition-colors">
+                    <span class="iconify w-6 h-6 text-white" data-icon="lucide:arrow-right"></span>
+                </button>
+                <button id="jumpBtn" class="mobile-btn absolute bottom-16 left-10 w-16 h-14 bg-white/10 backdrop-blur border border-white/10 rounded-t-xl flex items-center justify-center active:bg-purple-600/50 transition-colors">
+                    <span class="iconify w-6 h-6 text-white" data-icon="lucide:arrow-up"></span>
+                </button>
+            </div>
+            
+            <!-- Attack -->
+            <button id="attackBtn" class="mobile-btn w-20 h-20 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-xl shadow-purple-500/30 border-2 border-white/20">
+                <span class="game-font text-[10px] text-white">ATK</span>
+            </button>
+        </div>
+    </div>
 
-      <!-- greensock cdn -->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.2/TweenMax.min.js"></script>
+    <script>
+        // Data - Resume sections with CLEANED text (no special characters)
+        const resumeSections = [
+            {
+                title: "About Me",
+                icon: "user",
+                content: `
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-full flex items-center justify-center font-bold text-white">AS</div>
+                            <div>
+                                <h3 class="text-base font-semibold text-white">Andrew Shults</h3>
+                                <p class="text-xs text-purple-400">Full Stack Software Engineer</p>
+                            </div>
+                        </div>
+                        <p class="text-zinc-300 text-sm leading-relaxed">
+                            Versatile and results driven Full-Stack Developer specializing in SQL, C#, Java, and the .NET framework
+                            for enterprise scale applications. Adept at building robust, maintainable back-end services and creating
+                            intuitive, responsive front-end interfaces.
+                        </p>
+                        <div class="flex gap-2">
+                            <span class="px-2 py-1 bg-zinc-800 rounded text-[10px] text-zinc-300 border border-white/5">Florida</span>
+                            <span class="px-2 py-1 bg-zinc-800 rounded text-[10px] text-zinc-300 border border-white/5">Remote OK</span>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Skills",
+                icon: "zap",
+                content: `
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <div class="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Frontend</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span class="px-2 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded text-xs">Javascript</span>
+                                    <span class="px-2 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded text-xs">Angular</span>
+                                    <span class="px-2 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded text-xs">React</span>
+                                    <span class="px-2 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded text-xs">Vue.js</span>
+                                    <span class="px-2 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded text-xs">TypeScript</span>
+                                    <span class="px-2 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded text-xs">Tailwind</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Backend</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span class="px-2 py-1 bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded text-xs">SQL, MySQL</span>
+                                    <span class="px-2 py-1 bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded text-xs">C# .NET</span>
+                                    <span class="px-2 py-1 bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded text-xs">Java</span>
+                                    <span class="px-2 py-1 bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded text-xs">Node.js</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Experience",
+                icon: "briefcase",
+                content: `
+                <div class="space-y-6">
+                    <div class="relative pl-4 border-l-2 border-purple-500">
+                        <div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-purple-500"></div>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="text-white font-medium text-sm">Founder/Software Engineer</div>
+                                <div class="text-purple-400 text-xs">AbstractMediums</div>
+                            </div>
+                            <div class="text-zinc-500 text-[10px]">2018 - Present</div>
+                        </div>
+                        <ul class="text-zinc-400 text-xs mt-2 space-y-1.5 list-disc list-inside">
+                            <li>Developed and deployed responsive, cross-platform websites and custom web applications for various clients using WordPress, HTML, CSS, JavaScript, and modern JavaScript frameworks.</li>
+                            <li>Utilized SQL and Linux-based virtual machines on Google Cloud and AWS to create scalable data management solutions.</li>
+                            <li>Managed hosting environments with Apache, implemented SSL certificates, and ensured web security best practices.</li>
+                            <li>Built internal .NET Web Forms applications to streamline workflows, improve productivity, and reduce reliance on paper and spreadsheets.</li>
+                            <li>Integrated Google Analytics, forms, maps, and APIs to enhance functionality and user engagement.</li>
+                        </ul>
+                    </div>
+                    <div class="relative pl-4 border-l-2 border-zinc-700">
+                        <div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-zinc-700"></div>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="text-white font-medium text-sm">Senior Full Stack Software Engineer</div>
+                                <div class="text-purple-400 text-xs">Medlogix</div>
+                            </div>
+                            <div class="text-zinc-500 text-[10px]">2024 - 2025</div>
+                        </div>
+                        <ul class="text-zinc-400 text-xs mt-2 space-y-1.5 list-disc list-inside">
+                            <li>Designed and implemented custom SQL functions and performed database schema updates to support new feature requirements.</li>
+                            <li>Collaborated in the release and deployment of a new billing software solution for a major client, ensuring successful integration with existing systems.</li>
+                            <li>Proactively identified software bugs and proposed optimizations to improve code quality, performance, and maintainability.</li>
+                        </ul>
+                    </div>
+                    <div class="relative pl-4 border-l-2 border-zinc-700">
+                        <div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-zinc-700"></div>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="text-white font-medium text-sm">Lead Full-Stack Software Engineer</div>
+                                <div class="text-purple-400 text-xs">e4health</div>
+                            </div>
+                            <div class="text-zinc-500 text-[10px]">2022 - 2024</div>
+                        </div>
+                        <ul class="text-zinc-400 text-xs mt-2 space-y-1.5 list-disc list-inside">
+                            <li>As one of two core developers supporting e4auditor.com and e4sight.com, led full-stack development efforts on enterprise-level Angular and Java Spring Boot web applications, backed by MySQL databases and integrated with Azure Active Directory for secure authentication.</li>
+                            <li>Managed the complete software development lifecycle from wireframing and API design to implementation, QA, deployment, and production support while maintaining HIPAA compliance.</li>
+                            <li>Created internal tools to reduce costs, including a custom real-time chat modal replacing a third-party solution and saving over $50,000 annually.</li>
+                            <li>Built a Java-based solution for generating Excel reports, eliminating the need for licensed third-party tools.</li>
+                            <li>Solely led the redesign and enhancement of the e4services.com web app from version 3.0 to 5.1.</li>
+                            <li>Acted as the technical liaison to stakeholders, translating business requirements into actionable development tasks.</li>
+                            <li>Developed and integrated scalable REST APIs to extend core application functionality and streamline workflows.</li>
+                        </ul>
+                    </div>
+                    <div class="relative pl-4 border-l-2 border-zinc-700">
+                        <div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-zinc-700"></div>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="text-white font-medium text-sm">Full Stack Software Engineer Contract</div>
+                                <div class="text-purple-400 text-xs">Blue Cross Blue Shield of Tennessee</div>
+                            </div>
+                            <div class="text-zinc-500 text-[10px]">2022</div>
+                        </div>
+                        <ul class="text-zinc-400 text-xs mt-2 space-y-1.5 list-disc list-inside">
+                            <li>Designed and implemented robust message delivery systems for Email, SMS, and PDF communications.</li>
+                            <li>Utilized technologies such as T-SQL, C#, .NET, SQL Server, FTP, and Quadient Inspire to manage data flow and content generation.</li>
+                            <li>Integrated Salesforce systems by modifying and maintaining API endpoints to support evolving business requirements.</li>
+                            <li>Gained hands-on experience with IBM tools and environments, including IBM RTX, UrbanCode Deploy, WebSphere, and IBM Integration Bus.</li>
+                        </ul>
+                    </div>
+                    <div class="relative pl-4 border-l-2 border-zinc-700">
+                        <div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-zinc-700"></div>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="text-white font-medium text-sm">Software Developer Contract</div>
+                                <div class="text-purple-400 text-xs">Koch Company - KBX Logistics</div>
+                            </div>
+                            <div class="text-zinc-500 text-[10px]">2021 - 2022</div>
+                        </div>
+                        <ul class="text-zinc-400 text-xs mt-2 space-y-1.5 list-disc list-inside">
+                            <li>Developed and maintained enterprise logistics solutions for the KBX web application, supporting global clients in live, test, and production environments.</li>
+                            <li>Utilized C#, .NET, JavaScript, SQL, Azure DevOps, SSMS, SSRS, Git, Visual Studio, dBForge, FTP, and Remote Desktop.</li>
+                            <li>Wrote and optimized complex SQL queries, stored procedures, and functions to resolve data issues and improve backend performance.</li>
+                            <li>Configured and debugged API integrations, collaborating with external API developers to resolve data transmission and formatting issues.</li>
+                            <li>Worked cross-functionally with DBAs, developers, and IT support teams to deliver end-to-end development solutions.</li>
+                        </ul>
+                    </div>
+                    <div class="relative pl-4 border-l-2 border-zinc-700">
+                        <div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-zinc-700"></div>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="text-white font-medium text-sm">Software Development Engineer</div>
+                                <div class="text-purple-400 text-xs">Watthour Engineering</div>
+                            </div>
+                            <div class="text-zinc-500 text-[10px]">2018 - 2021</div>
+                        </div>
+                        <ul class="text-zinc-400 text-xs mt-2 space-y-1.5 list-disc list-inside">
+                            <li>Developed and maintained backend solutions in C# and .NET, supporting electronic meter testing software and related database infrastructure.</li>
+                            <li>Utilized SQL, PowerShell, and Microsoft SQL Server Management Studio to manage customer databases, including backups, schema edits, and custom data view creation.</li>
+                            <li>Migrated legacy Sybase databases to modern SQL Server platforms, ensuring data integrity and operational continuity.</li>
+                            <li>Connected and configured customer electronic metering hardware with proprietary PC-based software to ensure accurate calibration and test results.</li>
+                            <li>Supported and maintained multiple software tiers and versions to ensure compatibility across a diverse client base.</li>
+                            <li>Designed and executed SQL queries, views, and data exports to meet customer reporting and integration needs.</li>
+                        </ul>
+                    </div>
+                </div>
+                `
+            },
+            {
+                title: "Education",
+                icon: "graduation-cap",
+                content: `
+                    <div class="space-y-3">
+                        <div class="bg-zinc-900/50 rounded-lg p-3 border border-white/5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="text-white font-medium text-sm">B.S. Computer Science</div>
+                                    <div class="text-purple-400 text-xs">University of West Florida</div>
+                                </div>
+                                <div class="text-zinc-500 text-[10px]">In Progress</div>
+                            </div>
+                            <div class="mt-2 flex gap-2">
+                                <span class="px-1.5 py-0.5 bg-zinc-800 text-zinc-300 rounded text-[10px]">GPA: 3.5</span>
+                            </div>
+                        </div>
+                        <div class="bg-zinc-900/50 rounded-lg p-3 border border-white/5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="text-white font-medium text-sm">A.A.S Software Engineering Technology</div>
+                                    <div class="text-purple-400 text-xs">Holmes CC</div>
+                                </div>
+                                <div class="text-zinc-500 text-[10px]">2018</div>
+                            </div>
+                            <div class="mt-2 flex gap-2">
+                                <span class="px-1.5 py-0.5 bg-yellow-500/10 text-yellow-300 rounded text-[10px] border border-yellow-500/20">Presidents Award</span>
+                                <span class="px-1.5 py-0.5 bg-zinc-800 text-zinc-300 rounded text-[10px]">GPA: 3.6</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Projects",
+                icon: "code",
+                content: `
+                    <div class="grid gap-3">
+                        <a href="#" class="block bg-zinc-900/30 hover:bg-zinc-800 rounded-lg p-3 border border-white/5 hover:border-purple-500/30 transition-all group">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="text-white text-sm font-medium group-hover:text-purple-400 transition-colors">Abstractmediums.com</div>
+                                <span class="iconify w-3 h-3 text-zinc-500" data-icon="lucide:external-link"></span>
+                            </div>
+                            <p class="text-zinc-400 text-xs mb-2">Freelance Web and App Development</p>
+                            <div class="flex gap-1.5">
+                                <span class="px-1.5 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">C#</span>
+                                <span class="px-1.5 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">JavaScript</span>
+                            </div>
+                        </a>
+                        <a href="#" class="block bg-zinc-900/30 hover:bg-zinc-800 rounded-lg p-3 border border-white/5 hover:border-purple-500/30 transition-all group">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="text-white text-sm font-medium group-hover:text-purple-400 transition-colors">Contractrr</div>
+                                <span class="iconify w-3 h-3 text-zinc-500" data-icon="lucide:external-link"></span>
+                            </div>
+                            <p class="text-zinc-400 text-xs mb-2">Platform for public contractors and sub-contractors to arrange contracts.</p>
+                            <div class="flex gap-1.5">
+                                <span class="px-1.5 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">React</span>
+                                <span class="px-1.5 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">SQL</span>
+                            </div>
+                        </a>
+                    </div>
+                `
+            }
+        ];
 
-      <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
-      <script type="text/javascript">
-      // navigation starts here
-      $("#toggle").click(function() {
-            $(this).toggleClass('on');
-            $("#resize").toggleClass("active");
-      });
-      $("#resize ul li a").click(function() {
-            $(this).toggleClass('on');
-            $("#resize").toggleClass("active");
-      });
-      $(".close-btn").click(function() {
-            $(this).toggleClass('on');
-            $("#resize").toggleClass("active");
-      });
-      // navigation ends here
-      // nav animation
-      TweenMax.from("#brand", 1, {
-            delay: 0.4,
-            y: 10,
-            opacity: 0,
-            ease: Expo.easeInOut
-      })
-      TweenMax.staggerFrom("#menu li a", 1, {
-            delay: 0.4,
-            opacity: 0,
-            ease: Expo.easeInOut
-      }, 0.1);
-      // nav animation ends
-      new WOW().init();
-      </script>
-      <div class="whitespace"></div>
-</body>
-</html>
+        // Game State
+        let gameState = {
+            isRunning: false,
+            isPaused: false,
+            score: 0,
+            playerX: 80,
+            playerY: 96,
+            playerVelocityY: 0,
+            playerDirection: 1,
+            isJumping: false,
+            isOnGround: true,
+            isAttacking: false,
+            monsters: [],
+            defeatedSections: [],
+            difficulty: 0,
+            keys: { left: false, right: false, jump: false },
+            previousState: null,
+            animationId: null,
+            cameraX: 0,
+            levelWidth: 2000
+        };
+
+        const PLAYER_SPEED = 6;
+        const GRAVITY = 0.8;
+        const JUMP_FORCE = 16;
+        const GROUND_LEVEL = 96;
+
+        // Elements
+        const el = id => document.getElementById(id);
+        const gameContainer = el('gameContainer');
+        const startScreen = el('startScreen');
+        const resumeView = el('resumeView');
+        const player = el('player');
+        const pauseMenu = el('pauseMenu');
+        const contactModal = el('contactModal');
+        const mobileControls = el('mobileControls');
+
+        // Functions
+        function isMobile() { return window.innerWidth <= 1024; }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            resumeView.classList.add('hidden');
+            gameContainer.classList.remove('hidden');
+            gameContainer.classList.add('flex');
+            
+            if (isMobile()) {
+                mobileControls.classList.remove('hidden');
+                mobileControls.classList.add('flex');
+            }
+            
+            // Reset State
+            gameState.isRunning = true;
+            gameState.isPaused = false;
+            gameState.score = 0;
+            gameState.difficulty = 0;
+            gameState.defeatedSections = [];
+            gameState.playerX = 80;
+            gameState.playerY = GROUND_LEVEL;
+            gameState.playerVelocityY = 0;
+            gameState.isOnGround = true;
+            gameState.isJumping = false;
+            gameState.keys = { left: false, right: false, jump: false };
+            gameState.monsters = [];
+            gameState.cameraX = 0;
+            gameState.levelWidth = window.innerWidth + (resumeSections.length * 350) + 200;
+            
+            player.style.left = gameState.playerX + 'px';
+            player.style.bottom = gameState.playerY + 'px';
+            player.style.transform = 'scaleX(1)';
+            
+            updateScore();
+            updateSectionIndicators();
+            initWorld();
+            
+            if (gameState.animationId) {
+                cancelAnimationFrame(gameState.animationId);
+            }
+            gameState.animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function togglePause() {
+            if (!gameState.isRunning) return;
+            gameState.isPaused = !gameState.isPaused;
+            
+            if (gameState.isPaused) {
+                pauseMenu.classList.remove('hidden');
+                mobileControls.classList.add('hidden');
+                mobileControls.classList.remove('flex');
+            } else {
+                pauseMenu.classList.add('hidden');
+                if (isMobile()) {
+                    mobileControls.classList.remove('hidden');
+                    mobileControls.classList.add('flex');
+                }
+                gameState.animationId = requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function showResumeView(fromGame = false) {
+            gameState.previousState = fromGame ? 'game' : 'start';
+            
+            startScreen.classList.add('hidden');
+            pauseMenu.classList.add('hidden');
+            gameContainer.classList.add('hidden');
+            el('victoryScreen').classList.add('hidden');
+            el('victoryScreen').classList.remove('flex');
+            
+            resumeView.classList.remove('hidden');
+            mobileControls.classList.add('hidden');
+            mobileControls.classList.remove('flex');
+
+            populateFullResume();
+        }
+
+        function handleResumeBack() {
+            resumeView.classList.add('hidden');
+            
+            if (gameState.previousState === 'game') {
+                gameContainer.classList.remove('hidden');
+                pauseMenu.classList.remove('hidden');
+            } else {
+                startScreen.classList.remove('hidden');
+            }
+        }
+
+        function openContactModal() {
+            contactModal.classList.remove('hidden');
+            contactModal.classList.add('flex');
+        }
+
+        function closeContactModal() {
+            contactModal.classList.add('hidden');
+            contactModal.classList.remove('flex');
+        }
+
+        function restartGame() {
+            pauseMenu.classList.add('hidden');
+            el('victoryScreen').classList.add('hidden');
+            el('victoryScreen').classList.remove('flex');
+            
+            el('monstersContainer').innerHTML = '';
+            el('platformsContainer').innerHTML = '';
+            
+            if (gameState.animationId) {
+                cancelAnimationFrame(gameState.animationId);
+            }
+            
+            gameState.isRunning = false;
+            gameContainer.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            mobileControls.classList.add('hidden');
+            mobileControls.classList.remove('flex');
+        }
+
+        function populateFullResume() {
+            const container = el('fullResumeContent');
+            container.innerHTML = resumeSections.map((section, idx) => `
+                <div class="bg-zinc-900/40 border border-white/5 rounded-xl p-5 hover:border-purple-500/20 transition-all" style="animation: slideIn 0.4s ease-out ${idx * 0.1}s both">
+                    <div class="flex items-center gap-3 mb-4 border-b border-white/5 pb-3">
+                        <div class="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-purple-400">
+                            <span class="iconify w-5 h-5" data-icon="lucide:${section.icon}"></span>
+                        </div>
+                        <h2 class="text-sm font-semibold text-white tracking-wide">${section.title.toUpperCase()}</h2>
+                    </div>
+                    ${section.content}
+                </div>
+            `).join('');
+        }
+
+        // --- Game Logic ---
+        
+        let platforms = [];
+        
+        function initWorld() {
+            generatePlatforms();
+            createPlatforms();
+            createBackground();
+            initMonsters();
+        }
+
+        function createBackground() {
+            el('twinklingStars').innerHTML = '';
+            for(let i = 0; i < 30; i++) {
+                const s = document.createElement('div');
+                s.className = 'absolute rounded-full bg-white twinkling-star';
+                const size = Math.random() * 3 + 1;
+                s.style.width = size + 'px';
+                s.style.height = size + 'px';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top = Math.random() * 50 + '%';
+                s.style.animationDelay = Math.random() * 3 + 's';
+                el('twinklingStars').appendChild(s);
+            }
+        }
+
+        function generatePlatforms() {
+            platforms = [
+                { x: 150, y: 180, w: 120 },
+                { x: 350, y: 250, w: 100 },
+                { x: 550, y: 200, w: 110 },
+                { x: 750, y: 280, w: 90 },
+                { x: 950, y: 220, w: 100 },
+                { x: 1150, y: 300, w: 120 },
+                { x: 1400, y: 240, w: 100 },
+                { x: 1650, y: 180, w: 110 }
+            ];
+        }
+
+        function createPlatforms() {
+            const c = el('platformsContainer');
+            c.innerHTML = '';
+            platforms.forEach((p, i) => {
+                const d = document.createElement('div');
+                d.className = i % 2 === 0 ? 'platform absolute h-5 rounded-lg border-t-2 border-indigo-300/30' : 'platform-high absolute h-5 rounded-lg border-t-2 border-purple-300/30';
+                d.style.left = p.x + 'px';
+                d.style.bottom = p.y + 'px';
+                d.style.width = p.w + 'px';
+                c.appendChild(d);
+            });
+        }
+
+        function initMonsters() {
+            el('monstersContainer').innerHTML = '';
+            gameState.monsters = [];
+            
+            const monsterColors = ['#ef4444', '#8b5cf6', '#10b981', '#f59e0b', '#3b82f6'];
+            
+            for (let i = 0; i < resumeSections.length; i++) {
+                if (!gameState.defeatedSections.includes(i)) {
+                    spawnMonster(i, monsterColors[i % monsterColors.length]);
+                }
+            }
+        }
+
+        function spawnMonster(idx, color) {
+            const m = document.createElement('div');
+            m.className = 'monster absolute w-16 h-16';
+            m.dataset.idx = idx;
+            
+            m.innerHTML = `
+                <svg viewBox="0 0 64 64" class="w-full h-full drop-shadow-lg">
+                    <path d="M8 30 Q0 20 8 10 L20 25 Z" fill="${color}" opacity="0.7" class="monster-wing"/>
+                    <path d="M56 30 Q64 20 56 10 L44 25 Z" fill="${color}" opacity="0.7" class="monster-wing"/>
+                    <ellipse cx="32" cy="32" rx="20" ry="16" fill="${color}"/>
+                    <ellipse cx="32" cy="32" rx="20" ry="16" fill="url(#shine${idx})" opacity="0.3"/>
+                    <defs>
+                        <linearGradient id="shine${idx}" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:white;stop-opacity:0.5"/>
+                            <stop offset="100%" style="stop-color:white;stop-opacity:0"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="24" cy="28" r="6" fill="white"/>
+                    <circle cx="40" cy="28" r="6" fill="white"/>
+                    <circle cx="25" cy="29" r="3" fill="#1e1b4b"/>
+                    <circle cx="41" cy="29" r="3" fill="#1e1b4b"/>
+                    <circle cx="26" cy="28" r="1" fill="white"/>
+                    <circle cx="42" cy="28" r="1" fill="white"/>
+                    <path d="M26 42 Q32 46 38 42" stroke="#1e1b4b" stroke-width="2" fill="none" stroke-linecap="round"/>
+                </svg>
+                <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-black/70 px-2 py-1 rounded text-[8px] text-white whitespace-nowrap game-font">
+                    ${resumeSections[idx].title}
+                </div>
+            `;
+            
+            const startX = 250 + (idx * 300);
+            const startY = GROUND_LEVEL + 40 + (Math.sin(idx) * 40);
+            
+            m.style.left = startX + 'px';
+            m.style.bottom = startY + 'px';
+            
+            el('monstersContainer').appendChild(m);
+            
+            gameState.monsters.push({
+                el: m,
+                x: startX,
+                y: startY,
+                baseY: startY,
+                idx: idx,
+                alive: true,
+                dir: idx % 2 === 0 ? -1 : 1,
+                speed: 1.5 + (idx * 0.2),
+                patrolRange: 100,
+                startX: startX,
+                floatOffset: Math.random() * Math.PI * 2
+            });
+        }
+
+        function gameLoop(timestamp) {
+            if (!gameState.isRunning || gameState.isPaused) return;
+
+            const screenWidth = window.innerWidth;
+            const screenCenter = screenWidth / 3;
+            
+            // Player Movement
+            if (gameState.keys.left) {
+                gameState.playerX = Math.max(0, gameState.playerX - PLAYER_SPEED);
+                gameState.playerDirection = -1;
+                player.style.transform = 'scaleX(-1)';
+                if (gameState.isOnGround) player.classList.add('running');
+            } else if (gameState.keys.right) {
+                gameState.playerX += PLAYER_SPEED;
+                gameState.playerDirection = 1;
+                player.style.transform = 'scaleX(1)';
+                if (gameState.isOnGround) player.classList.add('running');
+            } else {
+                player.classList.remove('running');
+            }
+
+            // Jump
+            if (gameState.keys.jump && gameState.isOnGround) {
+                gameState.playerVelocityY = JUMP_FORCE;
+                gameState.isOnGround = false;
+                gameState.isJumping = true;
+            }
+            
+            // Gravity
+            gameState.playerVelocityY -= GRAVITY;
+            gameState.playerY += gameState.playerVelocityY;
+            
+            // Collision Detection
+            let onPlatform = false;
+            
+            if (gameState.playerY <= GROUND_LEVEL) {
+                gameState.playerY = GROUND_LEVEL;
+                gameState.playerVelocityY = 0;
+                gameState.isOnGround = true;
+                gameState.isJumping = false;
+                onPlatform = true;
+            }
+            
+            if (gameState.playerVelocityY <= 0) {
+                platforms.forEach(p => {
+                    const platformScreenX = p.x - gameState.cameraX;
+                    const playerLeft = gameState.playerX + 16;
+                    const playerRight = gameState.playerX + 48;
+                    const playerBottom = gameState.playerY;
+                    
+                    if (playerRight > platformScreenX && playerLeft < platformScreenX + p.w) {
+                        if (playerBottom <= p.y + 20 && playerBottom >= p.y - 5) {
+                            gameState.playerY = p.y + 20;
+                            gameState.playerVelocityY = 0;
+                            gameState.isOnGround = true;
+                            gameState.isJumping = false;
+                            onPlatform = true;
+                        }
+                    }
+                });
+            }
+            
+            if (!onPlatform && gameState.playerY > GROUND_LEVEL) {
+                gameState.isOnGround = false;
+            }
+            
+            // Camera
+            const targetCameraX = Math.max(0, gameState.playerX - screenCenter);
+            gameState.cameraX += (targetCameraX - gameState.cameraX) * 0.1;
+            
+            const playerScreenX = gameState.playerX - gameState.cameraX;
+            if (playerScreenX < 50) {
+                gameState.playerX = gameState.cameraX + 50;
+            }
+            if (playerScreenX > screenWidth - 100) {
+                gameState.playerX = gameState.cameraX + screenWidth - 100;
+            }
+            
+            const visualPlayerX = gameState.playerX - gameState.cameraX;
+            player.style.left = visualPlayerX + 'px';
+            player.style.bottom = gameState.playerY + 'px';
+
+            // Update Monsters
+            gameState.monsters.forEach(m => {
+                if (!m.alive) return;
+                
+                m.x += m.speed * m.dir;
+                
+                if (m.x < m.startX - m.patrolRange || m.x > m.startX + m.patrolRange) {
+                    m.dir *= -1;
+                }
+                
+                m.y = m.baseY + Math.sin((timestamp / 500) + m.floatOffset) * 15;
+                
+                const monsterScreenX = m.x - gameState.cameraX;
+                m.el.style.left = monsterScreenX + 'px';
+                m.el.style.bottom = m.y + 'px';
+                m.el.style.transform = `scaleX(${m.dir > 0 ? -1 : 1})`;
+            });
+
+            el('platformsContainer').style.transform = `translateX(-${gameState.cameraX}px)`;
+
+            gameState.animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function attack() {
+            if (gameState.isPaused || gameState.isAttacking || !gameState.isRunning) return;
+            
+            gameState.isAttacking = true;
+            const slashEffect = el('slashEffect');
+            slashEffect.style.opacity = '1';
+            slashEffect.classList.add('slash-effect');
+            
+            const playerWorldX = gameState.playerX;
+            const playerCenterY = gameState.playerY + 40;
+            const attackRange = 80;
+            
+            gameState.monsters.forEach(m => {
+                if (!m.alive) return;
+                
+                const monsterCenterX = m.x + 32;
+                const monsterCenterY = m.y + 32;
+                
+                const distX = Math.abs(playerWorldX + 32 - monsterCenterX);
+                const distY = Math.abs(playerCenterY - monsterCenterY);
+                
+                const facingMonster = (gameState.playerDirection === 1 && m.x > playerWorldX) ||
+                                     (gameState.playerDirection === -1 && m.x < playerWorldX);
+                
+                if (distX < attackRange && distY < 60 && facingMonster) {
+                    killMonster(m);
+                }
+            });
+
+            setTimeout(() => {
+                gameState.isAttacking = false;
+                slashEffect.style.opacity = '0';
+                slashEffect.classList.remove('slash-effect');
+            }, 300);
+        }
+
+        function killMonster(m) {
+            if (!m.alive) return;
+            m.alive = false;
+            
+            m.el.classList.add('hit');
+            
+            const monsterScreenX = m.x - gameState.cameraX;
+            createExplosion(monsterScreenX, m.y);
+            
+            setTimeout(() => {
+                m.el.classList.remove('hit');
+                m.el.classList.add('dying');
+            }, 100);
+            
+            setTimeout(() => {
+                m.el.style.display = 'none';
+                showResumePopup(m.idx);
+            }, 600);
+        }
+
+        function createExplosion(x, y) {
+            const container = el('effectsContainer');
+            const colors = ['#a78bfa', '#818cf8', '#c4b5fd', '#fbbf24'];
+            
+            const ring = document.createElement('div');
+            ring.className = 'explosion-ring absolute w-16 h-16 border-4 border-purple-400 rounded-full';
+            ring.style.left = (x + 16) + 'px';
+            ring.style.bottom = (y + 16) + 'px';
+            container.appendChild(ring);
+            
+            for (let i = 0; i < 12; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'explosion-particle absolute w-3 h-3 rounded-full';
+                particle.style.backgroundColor = colors[i % colors.length];
+                particle.style.left = (x + 24) + 'px';
+                particle.style.bottom = (y + 24) + 'px';
+                particle.style.setProperty('--tx', (Math.random() - 0.5) * 150 + 'px');
+                particle.style.setProperty('--ty', (Math.random() - 0.5) * 150 + 'px');
+                container.appendChild(particle);
+            }
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 1000);
+        }
+
+        function showResumePopup(idx) {
+            gameState.isPaused = true;
+            
+            if (!gameState.defeatedSections.includes(idx)) {
+                gameState.defeatedSections.push(idx);
+                gameState.score += 100;
+                updateScore();
+                updateSectionIndicators();
+            }
+            
+            const section = resumeSections[idx];
+            el('resumeContent').innerHTML = `
+                <div class="flex flex-col items-center mb-4 text-purple-300">
+                    <span class="iconify w-12 h-12 mb-2" data-icon="lucide:${section.icon}"></span>
+                    <h2 class="game-font text-sm border-b border-purple-500/30 pb-2">${section.title.toUpperCase()}</h2>
+                </div>
+                ${section.content}
+            `;
+            
+            const content = el('resumeContent');
+            content.classList.remove('resume-reveal');
+            void content.offsetWidth;
+            content.classList.add('resume-reveal');
+            
+            if (isMobile()) {
+                mobileControls.classList.add('hidden');
+                mobileControls.classList.remove('flex');
+            }
+            
+            el('resumeModal').classList.remove('hidden');
+            el('resumeModal').classList.add('flex');
+        }
+
+        function closeResumeModal() {
+            el('resumeModal').classList.add('hidden');
+            el('resumeModal').classList.remove('flex');
+            
+            if (gameState.defeatedSections.length === resumeSections.length) {
+                showVictory();
+            } else {
+                gameState.isPaused = false;
+                
+                if (isMobile()) {
+                    mobileControls.classList.remove('hidden');
+                    mobileControls.classList.add('flex');
+                }
+                
+                gameState.animationId = requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function showVictory() {
+            gameState.isPaused = true;
+            gameState.isRunning = false;
+            
+            el('finalScore').textContent = 'FINAL SCORE: ' + gameState.score;
+            el('victoryScreen').classList.remove('hidden');
+            el('victoryScreen').classList.add('flex');
+            
+            if (isMobile()) {
+                mobileControls.classList.add('hidden');
+                mobileControls.classList.remove('flex');
+            }
+        }
+
+        function updateScore() {
+            el('score').innerText = gameState.score;
+        }
+        
+        function updateSectionIndicators() {
+            for (let i = 1; i <= 5; i++) {
+                const bar = el('section' + i);
+                if (bar) {
+                    if (gameState.defeatedSections.includes(i - 1)) {
+                        bar.classList.remove('bg-zinc-800');
+                        bar.classList.add('bg-purple-500');
+                        bar.style.boxShadow = '0 0 10px rgba(168, 85, 247, 0.5)';
+                    } else {
+                        bar.classList.add('bg-zinc-800');
+                        bar.classList.remove('bg-purple-500');
+                        bar.style.boxShadow = 'none';
+                    }
+                }
+            }
+        }
+
+        // Keyboard Input
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                togglePause();
+                return;
+            }
+            
+            if (!gameState.isRunning) return;
+            
+            if (['ArrowLeft', 'a', 'A'].includes(e.key)) gameState.keys.left = true;
+            if (['ArrowRight', 'd', 'D'].includes(e.key)) gameState.keys.right = true;
+            if (['ArrowUp', 'w', 'W', ' '].includes(e.key) && e.key !== ' ') gameState.keys.jump = true;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                attack();
+            }
+        });
+        
+        document.addEventListener('keyup', e => {
+            if (['ArrowLeft', 'a', 'A'].includes(e.key)) gameState.keys.left = false;
+            if (['ArrowRight', 'd', 'D'].includes(e.key)) gameState.keys.right = false;
+            if (['ArrowUp', 'w', 'W'].includes(e.key)) gameState.keys.jump = false;
+        });
+
+        // Mobile Input
+        function bindMobileButton(btnId, key) {
+            const btn = el(btnId);
+            if (!btn) return;
+            
+            btn.addEventListener('touchstart', e => {
+                e.preventDefault();
+                gameState.keys[key] = true;
+            });
+            
+            btn.addEventListener('touchend', e => {
+                e.preventDefault();
+                gameState.keys[key] = false;
+            });
+            
+            btn.addEventListener('touchcancel', e => {
+                e.preventDefault();
+                gameState.keys[key] = false;
+            });
+        }
+        
+        bindMobileButton('leftBtn', 'left');
+        bindMobileButton('rightBtn', 'right');
+        bindMobileButton('jumpBtn', 'jump');
+        
+        const attackBtn = el('attackBtn');
+        if (attackBtn) {
+            attackBtn.addEventListener('touchstart', e => {
+                e.preventDefault();
+                attack();
+            });
+        }
+
+        // Resize Handler
+        window.addEventListener('resize', () => {
+            if (gameState.isRunning) {
+                generatePlatforms();
+                createPlatforms();
+                
+                if (isMobile() && !gameState.isPaused) {
+                    mobileControls.classList.remove('hidden');
+                    mobileControls.classList.add('flex');
+                } else if (!isMobile()) {
+                    mobileControls.classList.add('hidden');
+                    mobileControls.classList.remove('flex');
+                }
+            }
+        });
+    </script>
+</body></html>
